@@ -1,86 +1,110 @@
 package study.spring.algorithm.programmers;
 
 import java.util.*;
-import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+/**
+ * 문제 출처 : https://school.programmers.co.kr/learn/courses/30/lessons/72412
+ */
 
 class Solution {
 
-  HashMap<String, Integer> map;
-  boolean[] visits;
-  String[] order;
+    public int[] solution(String[] info, String[] query) {
 
-  public String[] solution(String[] orders, int[] course) {
-    visits = new boolean[orders.length];
-    List<String> list = new ArrayList<>();
+        // info 정보를 Map에 저장하기
+        Map<String, LinkedList<Integer>> map = new HashMap<>();
 
-    for (int i=0; i<orders.length; i++) {
+        for (String str : info) {
+            String[] split = str.split(" ");
+            StringBuilder sb = new StringBuilder();
+            sb.append(language(split[0]));
+            sb.append(part(split[1]));
+            sb.append(career(split[2]));
+            sb.append(soulFood(split[3]));
 
-      String[] split = orders[i].split("");
-      Arrays.sort(split);
+            LinkedList<Integer> list = map.getOrDefault(sb.toString(), new LinkedList<>());
+            list.offer(score(split[4]));
+            map.put(sb.toString(), list);
+        }
+        // query를 하나씩 돌려가면서 개수를 찾아가기
+        for (String q : query) {
+            String[] split = q.split(" and ");
+            StringBuilder sb = new StringBuilder();
+            sb.append(language(split[0]));
+            sb.append(part(split[1]));
+            sb.append(career(split[2]));
+            sb.append(soulFood(split[3].split(" ")[0]));
 
-      orders[i] = Arrays.toString(split);
-      System.out.println(orders[i]);
+            String key = sb.toString();
+            int score = score(split[3].split(" ")[1]);
+
+            List<Integer> list = new ArrayList<>();
+
+            map.entrySet().stream()
+                    .filter((e) -> e.getKey().matches(key))
+                    .forEach((e) -> list.addAll(e.getValue()));
+
+            List<Integer> sortedList = list.stream()
+                    .sorted()
+                    .collect(Collectors.toList());
+
+            // score 이상인 값을 찾아낸다.
+
+        }
+
+
+        // 그 과정에서 이진탐색 사용하기
+
+        return null;
     }
 
-    for (int size : course) {
-      map = new HashMap<>();
-
-      for (String str : orders) {
-        order = str.split("");
-        checkCourseMenu(0,0, size, ""); // 모든 경우의 수를 뽑아내는 메소드 구현(재귀)
-      }
-
-      // map에 저장된 값들 중 최대값을 찾아 키값을 따로 저장하는 로직 구현 실패
-
-      int max = 0;
-
-      for (Entry<String, Integer> entry : map.entrySet()) {
-        max = Math.max(max, entry.getValue());
-      }
-
-      for(Entry<String,Integer> entry : map.entrySet()){
-        if(max >=2 && entry.getValue() == max)
-          list.add(entry.getKey());
-      }
+    private String language(String lang) {
+        switch(lang) {
+            case "cpp" :
+                return "C";
+            case "java" :
+                return "J";
+            case "python" :
+                return "P";
+            default :
+                return ".";
+        }
     }
 
-    Collections.sort(list);
-    System.out.println(list);
-
-    String[] answer = new String[list.size()];
-
-    for (int i=0; i<list.size(); i++) {
-      answer[i] = list.get(i);
+    private String part(String part) {
+        switch(part) {
+            case "backend" :
+                return "B";
+            case "frontend" :
+                return "F";
+            default :
+                return ".";
+        }
     }
 
-    return answer;
-  }
-
-  public void checkCourseMenu(int sp, int depth, int size, String menu) {
-
-    if (depth == size) {
-
-      // getOrDefault 값 활용법
-
-      // map.put(menu, map.getOrDefault(menu, 1) + 1);
-
-      if (map.get(menu) != null && map.get(menu) >= 1) {
-        map.put(menu, map.get(menu) + 1);
-      } else {
-        map.put(menu, 1);
-      }
-
-      return;
+    private String career(String career) {
+        switch(career) {
+            case "junior" :
+                return "J";
+            case "senior" :
+                return "S";
+            default :
+                return ".";
+        }
     }
 
-    for (int i=0; i< order.length; i++) {
-
-      if (!visits[i]) {
-        visits[i] = true;
-        checkCourseMenu(sp, depth + 1, size, menu.concat(order[i]));
-        visits[i] = false;
-      }
-      sp++;
+    private String soulFood(String soulFood) {
+        switch(soulFood) {
+            case "chicken" :
+                return "C";
+            case "pizza" :
+                return "P";
+            default :
+                return ".";
+        }
     }
-  }
+
+    private int score(String score) {
+        return Integer.parseInt(score);
+    }
 }
